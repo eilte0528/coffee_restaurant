@@ -1,0 +1,969 @@
+<!DOCTYPE html>
+<!-- Tells the browser this is a modern HTML5 page -->
+<html lang="en">
+<head>
+  <!-- Character encoding so symbols like &, × and ₹ display correctly -->
+  <meta charset="UTF-8">
+  <!-- Makes the page scale properly on phones -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- Text shown on the browser tab (required: restaurant name) -->
+  <title>Roast &amp; Ritual Coffee House</title>
+
+  <style>
+    /* ==========================================================
+       THEME COLORS
+       Defined once as variables so the whole palette can be
+       changed from one place. Used below with var(--name).
+       ========================================================== */
+    :root {
+      --espresso: #1e120b;  /* darkest brown: header, footer, overlay */
+      --mocha: #4a2e1f;     /* main text color */
+      --cream: #fbf3e6;     /* page background */
+      --caramel: #c68642;   /* accent (buttons, price badges) */
+      --latte: #a8643a;     /* accent (headings, borders) */
+      --gold: #f0c27b;      /* nav links and highlights */
+    }
+
+    /* Smooth gliding when clicking the #menu / #order-form nav links */
+    html { scroll-behavior: smooth; }
+
+    /* Base page styles: font, background pattern, text color */
+    body {
+      font-family: Georgia, "Times New Roman", serif;
+      background-color: var(--cream);
+      /* Two faint circles layered to look like subtle coffee-ring stains */
+      background-image:
+        radial-gradient(circle at 20% 20%, rgba(198, 134, 66, 0.07) 0 40px, transparent 41px),
+        radial-gradient(circle at 80% 70%, rgba(74, 46, 31, 0.05) 0 60px, transparent 61px);
+      background-size: 220px 220px;  /* the pattern repeats every 220px */
+      color: var(--mocha);
+      margin: 0;           /* removes the browser's default outer gap */
+      line-height: 1.6;    /* comfortable spacing between text lines */
+    }
+
+    /* ==========================================================
+       HEADER (banner image, title, navigation)
+       ========================================================== */
+    header {
+      position: relative;      /* lets the steam animation position itself inside */
+      background: var(--espresso);
+      color: var(--cream);
+      text-align: center;
+      padding-bottom: 1.4rem;
+      overflow: hidden;        /* hides steam particles that float outside */
+    }
+
+    /* The wide banner illustration */
+    #header-img {
+      width: 100%;
+      height: 320px;
+      object-fit: cover;       /* crops to fill without stretching */
+      display: block;          /* removes the tiny gap images get under them */
+      /* Fades the bottom of the image into the dark header background */
+      -webkit-mask-image: linear-gradient(black 65%, transparent);
+      mask-image: linear-gradient(black 65%, transparent);
+    }
+
+    /* Restaurant name: pulled up over the image with a glowing effect */
+    header h1 {
+      position: relative;
+      z-index: 2;              /* keeps the title above the steam */
+      font-size: clamp(2rem, 7vw, 3.6rem);  /* scales with screen width, with min and max */
+      letter-spacing: 6px;
+      text-transform: uppercase;
+      margin: -90px 0 0.6rem;  /* negative margin overlaps the image */
+      color: #fff3dc;
+      text-shadow: 0 0 12px #f0c27b, 0 0 30px #a8643a;  /* warm glow */
+      animation: glow 4s infinite alternate ease-in-out;
+    }
+    /* Makes the glow slowly pulse brighter and dimmer */
+    @keyframes glow {
+      0%   { text-shadow: 0 0 10px #f0c27b, 0 0 24px #a8643a; }
+      100% { text-shadow: 0 0 18px #ffe2a8, 0 0 42px #c68642; }
+    }
+
+    /* Floating steam dots. A single 6px dot is drawn, and box-shadow
+       clones it at 8 different offsets. One animation moves them all. */
+    header::after {
+      content: "";
+      position: absolute;
+      left: 50%;
+      bottom: 150px;
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: rgba(255, 244, 225, 0.8);
+      box-shadow:
+        -120px 20px 0 rgba(255, 244, 225, 0.6), 90px 40px 0 rgba(240, 194, 123, 0.8),
+        -40px 60px 0 rgba(255, 244, 225, 0.5), 150px 10px 0 rgba(240, 194, 123, 0.7),
+        -200px 50px 0 rgba(255, 244, 225, 0.6), 40px 80px 0 rgba(240, 194, 123, 0.8),
+        220px 60px 0 rgba(255, 244, 225, 0.5), -90px 90px 0 rgba(240, 194, 123, 0.7);
+      animation: rise 6s linear infinite;
+      pointer-events: none;    /* dots never block clicks */
+      z-index: 1;
+    }
+    /* Dots fade in, drift upward, and fade out, then repeat */
+    @keyframes rise {
+      0%   { transform: translateY(40px); opacity: 0; }
+      20%  { opacity: 1; }
+      100% { transform: translateY(-200px); opacity: 0; }
+    }
+
+    /* Navigation row holding the two links */
+    nav {
+      position: relative;
+      z-index: 2;
+      display: flex;
+      justify-content: center;
+      gap: 1rem;
+    }
+    /* Pill-shaped outline buttons */
+    nav a {
+      color: var(--gold);
+      text-decoration: none;   /* removes the default underline */
+      font-weight: bold;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      font-size: 0.95rem;
+      padding: 0.5rem 1.4rem;
+      border: 2px solid var(--gold);
+      border-radius: 999px;    /* fully rounded ends */
+      transition: all 0.25s ease;
+    }
+    /* On hover: fills with gold, lifts slightly, adds a glow */
+    nav a:hover {
+      background: var(--gold);
+      color: var(--espresso);
+      transform: translateY(-2px);
+      box-shadow: 0 6px 14px rgba(240, 194, 123, 0.4);
+    }
+
+    /* ==========================================================
+       MAIN CONTENT AREA
+       ========================================================== */
+    /* Centers content and limits its width for readability */
+    main {
+      max-width: 860px;
+      margin: 0 auto;
+      padding: 1rem 1.5rem;
+    }
+    /* Section titles ("Menu", "Place Your Order") */
+    h2 {
+      font-size: 2rem;
+      text-align: center;
+      color: var(--latte);
+      margin: 2.5rem 0 1.5rem;
+      position: relative;
+    }
+    /* Decorative gradient underline under each h2 */
+    h2::after {
+      content: "";
+      display: block;
+      width: 90px;
+      height: 4px;
+      margin: 0.5rem auto 0;
+      border-radius: 4px;
+      background: linear-gradient(90deg, #a8643a, #f0c27b, #a8643a);
+    }
+
+    /* ==========================================================
+       MENU CARDS (each <article>)
+       ========================================================== */
+    /* Card layout: image beside text */
+    article {
+      display: flex;
+      gap: 1.2rem;
+      align-items: center;     /* vertically centers image and text */
+      background: #fff;
+      border-radius: 14px;
+      padding: 1rem;
+      margin-bottom: 1.2rem;
+      border-left: 6px solid var(--latte);
+      box-shadow: 0 3px 10px rgba(74, 46, 31, 0.15);
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    /* Every second card flips: image on the right, accent border on the right */
+    article:nth-of-type(even) { flex-direction: row-reverse; border-left: none; border-right: 6px solid var(--latte); }
+    /* Hover: card lifts, tilts slightly, shadow deepens */
+    article:hover {
+      transform: translateY(-5px) rotate(-0.4deg);
+      box-shadow: 0 12px 24px rgba(74, 46, 31, 0.25);
+    }
+    /* Card image */
+    article img {
+      width: 190px;
+      height: 150px;
+      object-fit: cover;
+      border-radius: 12px;
+      flex-shrink: 0;          /* stops the image from squishing on narrow cards */
+      transition: transform 0.4s ease;
+    }
+    /* Hover: image zooms and tilts a little */
+    article:hover img { transform: scale(1.06) rotate(1.5deg); }
+    article h3 {
+      margin: 0 0 0.4rem;
+      font-size: 1.4rem;
+      color: var(--mocha);
+    }
+    article p { margin: 0; }
+    /* The italic <em> price becomes a colored pill badge */
+    article em {
+      display: inline-block;
+      margin-left: 0.4rem;
+      padding: 0.1rem 0.7rem;
+      background: linear-gradient(135deg, #c68642, #8a4f2b);
+      color: #fff;
+      font-weight: bold;
+      border-radius: 999px;
+      box-shadow: 0 2px 6px rgba(138, 79, 43, 0.4);
+    }
+
+    /* Scroll reveal. The ".js" class is added by a script at the top of
+       <body>, so if JavaScript is off the cards simply stay visible. */
+    .js article.reveal:not(.in) { opacity: 0; }                     /* hidden until scrolled into view */
+    .js article.reveal.in { animation: fadeUp 0.7s ease backwards; } /* then fades up */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(32px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ==========================================================
+       ORDER FORM
+       ========================================================== */
+    /* White card holding the whole form */
+    form {
+      background: #fff;
+      border-radius: 14px;
+      padding: 1.6rem;
+      border-top: 6px solid var(--latte);
+      box-shadow: 0 3px 10px rgba(74, 46, 31, 0.15);
+    }
+    /* Each group of inputs gets a dashed box */
+    fieldset {
+      border: 2px dashed #dcc7a8;
+      border-radius: 10px;
+      margin-bottom: 1.4rem;
+      padding: 1rem 1.2rem;
+    }
+    /* The group title is styled as a colored pill */
+    legend {
+      font-weight: bold;
+      color: #fff;
+      background: var(--latte);
+      padding: 0.2rem 1rem;
+      border-radius: 999px;
+      letter-spacing: 1px;
+    }
+    /* One row = one label + one input, side by side */
+    .field {
+      margin-bottom: 0.7rem;
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+    }
+    .field label { cursor: pointer; }          /* hand cursor hints it's clickable */
+    .qty .field label { flex: 1; }             /* pushes number boxes to the right edge */
+    /* Radio buttons and checkboxes take the theme color and a bigger size */
+    input[type="radio"], input[type="checkbox"] {
+      accent-color: var(--latte);
+      width: 1.1rem;
+      height: 1.1rem;
+    }
+    /* Quantity boxes */
+    input[type="number"] {
+      width: 4.2rem;
+      padding: 0.4rem;
+      border: 2px solid #dcc7a8;
+      border-radius: 8px;
+      font-family: inherit;
+      font-size: 1rem;
+      text-align: center;
+    }
+    /* Focus ring when clicking into a number box or the textarea */
+    input[type="number"]:focus, textarea:focus {
+      outline: none;
+      border-color: var(--latte);
+      box-shadow: 0 0 0 3px rgba(168, 100, 58, 0.25);
+    }
+    /* Special requests box */
+    textarea {
+      width: 100%;
+      box-sizing: border-box;  /* includes padding in the 100% so it doesn't overflow */
+      margin-top: 0.5rem;
+      padding: 0.7rem;
+      font-family: inherit;
+      font-size: 1rem;
+      border: 2px solid #dcc7a8;
+      border-radius: 8px;
+      resize: vertical;        /* user can only drag it taller, not wider */
+    }
+    /* "Go To Checkout" button */
+    input[type="submit"] {
+      display: block;
+      width: 100%;
+      background: linear-gradient(135deg, #c68642, #8a4f2b);
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      padding: 1rem;
+      font-family: inherit;
+      font-size: 1.2rem;
+      font-weight: bold;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    input[type="submit"]:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 10px 20px rgba(138, 79, 43, 0.45);
+    }
+
+    /* Red warning shown when the cart is empty. Hidden until JS adds ".show" */
+    #form-error {
+      display: none;
+      background: #fdeaea;
+      color: #9b2c2c;
+      border: 2px solid #e8a5a5;
+      border-radius: 10px;
+      padding: 0.7rem 1rem;
+      margin-bottom: 1rem;
+      font-weight: bold;
+      text-align: center;
+    }
+    #form-error.show { display: block; animation: shake 0.45s ease; }
+    /* Quick left-right wobble to grab attention */
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      20% { transform: translateX(-8px); }
+      40% { transform: translateX(8px); }
+      60% { transform: translateX(-5px); }
+      80% { transform: translateX(5px); }
+    }
+
+    /* ==========================================================
+       CHECKOUT POPUP
+       ========================================================== */
+    /* Full-screen dark backdrop behind the popup. Hidden by default. */
+    .overlay {
+      position: fixed;
+      inset: 0;                /* shorthand for top/right/bottom/left = 0 */
+      z-index: 100;            /* sits above everything else */
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 1rem;
+      background: rgba(30, 18, 11, 0.78);
+      backdrop-filter: blur(4px);   /* blurs the page behind */
+    }
+    /* JS adds ".open" to show it */
+    .overlay.open { display: flex; animation: fadeIn 0.3s ease; }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+    /* The popup card itself */
+    .modal {
+      position: relative;
+      width: 100%;
+      max-width: 420px;
+      max-height: 92vh;        /* never taller than the screen */
+      overflow-y: auto;        /* scrolls inside if the receipt is long */
+      background: var(--cream);
+      border-radius: 18px;
+      border-top: 8px solid var(--latte);
+      padding: 1.6rem 1.6rem 1.4rem;
+      text-align: center;
+      box-shadow: 0 24px 60px rgba(0, 0, 0, 0.5);
+      animation: popIn 0.45s cubic-bezier(0.2, 1.4, 0.4, 1);  /* slight overshoot = bouncy */
+    }
+    @keyframes popIn {
+      from { transform: scale(0.7) translateY(30px); opacity: 0; }
+      to   { transform: scale(1) translateY(0); opacity: 1; }
+    }
+
+    /* The popup has two stages. Only one shows at a time:
+       "brewing" (default) and "done" (when .modal has class "done"). */
+    .stage-brewing, .stage-done { display: none; }
+    .modal:not(.done) .stage-brewing { display: block; }
+    .modal.done .stage-done { display: block; animation: fadeUp 0.6s ease backwards; }
+
+    /* Brewing stage: the coffee cup drawing */
+    .brew-cup { width: 130px; height: 130px; }
+    /* The brown rectangle inside the cup slides up to look like it's filling */
+    .brew-fill { animation: fillUp 1.9s ease-in-out forwards; }
+    @keyframes fillUp {
+      from { transform: translateY(80px); }
+      to   { transform: translateY(0); }
+    }
+    /* Three steam curls above the cup, each starting slightly later */
+    .brew-steam path {
+      fill: none;
+      stroke: var(--latte);
+      stroke-width: 4;
+      stroke-linecap: round;
+      opacity: 0;
+      animation: steam 1.4s ease-in-out infinite;
+    }
+    .brew-steam path:nth-child(2) { animation-delay: 0.3s; }
+    .brew-steam path:nth-child(3) { animation-delay: 0.6s; }
+    @keyframes steam {
+      0%   { opacity: 0; transform: translateY(8px); }
+      50%  { opacity: 0.8; }
+      100% { opacity: 0; transform: translateY(-10px); }
+    }
+    /* Animated "..." after "Brewing your order". The content changes in steps. */
+    .dots::after {
+      content: "";
+      animation: dots 1.2s steps(4) infinite;
+    }
+    @keyframes dots {
+      0% { content: ""; } 25% { content: "."; } 50% { content: ".."; } 75% { content: "..."; }
+    }
+
+    /* Done stage: the green checkmark. The circle and tick start with their
+       dash offset equal to their length (invisible), then "draw" themselves. */
+    .check { width: 96px; height: 96px; display: block; margin: 0 auto 0.4rem; }
+    .check circle {
+      fill: none;
+      stroke: #3f8f5b;
+      stroke-width: 5;
+      stroke-dasharray: 166;   /* total length of the circle's outline */
+      stroke-dashoffset: 166;  /* fully hidden to start */
+      stroke-linecap: round;
+      transform-origin: center;
+      transform: rotate(-90deg);  /* so the drawing starts at the top */
+    }
+    .check path {
+      fill: none;
+      stroke: #3f8f5b;
+      stroke-width: 6;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      stroke-dasharray: 48;
+      stroke-dashoffset: 48;
+    }
+    /* Circle draws first, then the tick (0.6s delay), then the whole icon pulses */
+    .modal.done .check circle { animation: draw 0.7s ease forwards; }
+    .modal.done .check path { animation: draw 0.45s 0.6s ease forwards; }
+    .modal.done .check { animation: pulse 0.5s 1s ease; }
+    @keyframes draw { to { stroke-dashoffset: 0; } }   /* offset 0 = fully visible */
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.15); }
+    }
+
+    /* Text inside the popup */
+    .modal h3 { margin: 0.2rem 0 0.2rem; font-size: 1.7rem; color: var(--mocha); }
+    .modal .sub { margin: 0 0 1rem; color: var(--latte); }
+    /* "ORDER #1234" badge */
+    .order-no {
+      display: inline-block;
+      background: var(--espresso);
+      color: var(--gold);
+      font-weight: bold;
+      letter-spacing: 2px;
+      padding: 0.2rem 0.9rem;
+      border-radius: 999px;
+      margin-bottom: 1rem;
+    }
+    /* Receipt list */
+    .receipt {
+      list-style: none;
+      margin: 0 0 0.6rem;
+      padding: 0.8rem 1rem;
+      background: #fff;
+      border: 2px dashed #dcc7a8;
+      border-radius: 10px;
+      text-align: left;
+    }
+    /* Each receipt line: item name on the left, price on the right */
+    .receipt li {
+      display: flex;
+      justify-content: space-between;
+      gap: 1rem;
+      padding: 0.15rem 0;
+    }
+    /* The final total line, set apart with a divider */
+    .receipt li.total {
+      border-top: 2px solid #dcc7a8;
+      margin-top: 0.4rem;
+      padding-top: 0.5rem;
+      font-weight: bold;
+      font-size: 1.15rem;
+      color: var(--latte);
+    }
+    /* Customer's special request note, shown in small italics */
+    .receipt li.note { display: block; font-size: 0.9rem; font-style: italic; color: #7a5b46; }
+    /* "Order Something Else" button */
+    .modal button {
+      margin-top: 0.8rem;
+      width: 100%;
+      background: linear-gradient(135deg, #c68642, #8a4f2b);
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      padding: 0.85rem;
+      font-family: inherit;
+      font-size: 1.05rem;
+      font-weight: bold;
+      letter-spacing: 1px;
+      cursor: pointer;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    .modal button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 16px rgba(138, 79, 43, 0.45);
+    }
+
+    /* Falling coffee-bean confetti. JS creates the <span> beans. */
+    #confetti {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;    /* confetti never blocks clicks */
+      overflow: hidden;
+      z-index: 101;            /* above the popup */
+    }
+    #confetti span {
+      position: absolute;
+      top: -30px;              /* starts just above the screen */
+      width: 12px;
+      height: 18px;
+      border-radius: 50%;      /* oval bean shape */
+      animation: fall linear forwards;
+    }
+    /* The thin dark line down the middle of each bean */
+    #confetti span::after {
+      content: "";
+      position: absolute;
+      left: 50%;
+      top: 8%;
+      bottom: 8%;
+      width: 2px;
+      margin-left: -1px;
+      background: rgba(0, 0, 0, 0.35);
+      border-radius: 2px;
+    }
+    /* Falls past the bottom of the screen while spinning twice */
+    @keyframes fall {
+      0%   { transform: translateY(0) rotate(0deg); opacity: 1; }
+      100% { transform: translateY(110vh) rotate(720deg); opacity: 0.9; }
+    }
+
+    /* ==========================================================
+       FOOTER
+       ========================================================== */
+    footer {
+      background: var(--espresso);
+      color: var(--cream);
+      text-align: center;
+      padding: 1.2rem;
+      margin-top: 3rem;
+      border-top: 4px solid var(--latte);
+    }
+
+    /* ==========================================================
+       RESPONSIVE + ACCESSIBILITY
+       ========================================================== */
+    /* On phones (600px wide or less): stack image above text in each card */
+    @media (max-width: 600px) {
+      article, article:nth-of-type(even) { flex-direction: column; border-left: 6px solid var(--latte); border-right: none; text-align: center; }
+      article img { width: 100%; height: 190px; }
+    }
+    /* For people who set "reduce motion" in their system: turn off animations,
+       show the checkmark fully drawn, and skip the confetti */
+    @media (prefers-reduced-motion: reduce) {
+      * { animation: none !important; transition: none !important; }
+      .check circle, .check path { stroke-dashoffset: 0; }
+      #confetti { display: none; }
+    }
+  </style>
+</head>
+<body>
+  <!-- Marks the page as "JavaScript is running". The scroll-reveal CSS
+       depends on this so cards never stay invisible if JS fails. -->
+  <script>document.documentElement.classList.add("js");</script>
+
+  <!-- ===================== HEADER ===================== -->
+  <header>
+    <!-- Banner illustration (required id: header-img). It's an inline SVG
+         drawing: a cafe with hanging lamps and a steaming cup. -->
+    <img id="header-img" alt="Cozy cafe with hanging lamps and a steaming coffee cup"
+      src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 400' preserveAspectRatio='xMidYMid slice'><defs><linearGradient id='s' x1='0' y1='0' x2='0' y2='1'><stop offset='0' stop-color='%231e120b'/><stop offset='0.6' stop-color='%234a2e1f'/><stop offset='1' stop-color='%23a8643a'/></linearGradient><radialGradient id='g' cx='0.5' cy='0' r='0.5'><stop offset='0' stop-color='%23ffd9a0' stop-opacity='0.8'/><stop offset='1' stop-color='%23ffd9a0' stop-opacity='0'/></radialGradient></defs><rect width='1200' height='400' fill='url(%23s)'/><g stroke='%23c68642' stroke-width='3'><line x1='200' y1='0' x2='200' y2='60'/><line x1='600' y1='0' x2='600' y2='40'/><line x1='1000' y1='0' x2='1000' y2='60'/></g><g fill='url(%23g)'><circle cx='200' cy='80' r='130'/><circle cx='600' cy='60' r='150'/><circle cx='1000' cy='80' r='130'/></g><g fill='%23f0c27b'><path d='M170 80 A30 30 0 0 1 230 80 Z'/><path d='M565 62 A35 35 0 0 1 635 62 Z'/><path d='M970 80 A30 30 0 0 1 1030 80 Z'/></g><g fill='%23fff3dc'><circle cx='200' cy='86' r='7'/><circle cx='600' cy='68' r='8'/><circle cx='1000' cy='86' r='7'/></g><g fill='%232a1810'><rect x='60' y='200' width='200' height='12' rx='4'/><rect x='940' y='200' width='200' height='12' rx='4'/></g><g fill='%23c68642'><rect x='85' y='160' width='30' height='40' rx='4'/><rect x='125' y='170' width='26' height='30' rx='4'/><rect x='165' y='155' width='34' height='45' rx='4'/><rect x='965' y='165' width='30' height='35' rx='4'/><rect x='1005' y='155' width='34' height='45' rx='4'/><rect x='1050' y='170' width='28' height='30' rx='4'/></g><rect y='372' width='1200' height='28' fill='%23120a06'/><ellipse cx='600' cy='372' rx='120' ry='14' fill='%23f4ede0'/><path d='M520 300 H680 C680 350 650 372 600 372 C550 372 520 350 520 300 Z' fill='%23fbf3e6'/><path d='M680 315 C720 315 720 350 672 352' stroke='%23fbf3e6' stroke-width='12' fill='none'/><ellipse cx='600' cy='300' rx='80' ry='14' fill='%236f4e37'/><ellipse cx='600' cy='300' rx='60' ry='9' fill='%23a8643a'/><g stroke='%23fff3dc' stroke-width='6' fill='none' stroke-linecap='round' opacity='0.55'><path d='M570 280 C550 250 590 235 570 205 C555 180 585 170 575 145'/><path d='M610 280 C590 250 630 235 610 205 C595 180 625 170 615 145'/><path d='M650 280 C630 250 670 235 650 205 C635 180 665 170 655 145'/></g><g fill='%234a2e1f'><ellipse cx='420' cy='380' rx='9' ry='6' transform='rotate(30 420 380)'/><ellipse cx='780' cy='382' rx='9' ry='6' transform='rotate(-30 780 382)'/><ellipse cx='820' cy='378' rx='9' ry='6' transform='rotate(10 820 378)'/></g></svg>">
+
+    <!-- Restaurant name (required h1) -->
+    <h1>Roast &amp; Ritual</h1>
+
+    <!-- Navigation: each link jumps to the section whose id matches the href -->
+    <nav>
+      <a href="#menu">Menu</a>
+      <a href="#order-form">Order Form</a>
+    </nav>
+  </header>
+
+  <!-- ===================== MAIN ===================== -->
+  <main>
+
+    <!-- MENU SECTION: id="menu" is the target of the nav link -->
+    <section id="menu">
+      <h2>Menu</h2>
+
+      <!-- Each <article> is one menu item: image + name (h3) + description with italic price.
+           class="reveal" makes it fade up when scrolled into view. -->
+
+      <!-- Item 1: latte drawing (a cup seen from above with a heart in the foam) -->
+      <article class="reveal">
+        <img alt="Velvet latte with heart-shaped latte art"
+          src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 280 220'><rect width='280' height='220' fill='%23f3e5d0'/><ellipse cx='146' cy='200' rx='100' ry='9' fill='%23000' opacity='0.12'/><circle cx='140' cy='108' r='92' fill='%23fff'/><circle cx='140' cy='108' r='92' fill='none' stroke='%23dcc7a8' stroke-width='3'/><rect x='215' y='96' width='44' height='24' rx='12' fill='%23fff' stroke='%23dcc7a8' stroke-width='3'/><circle cx='140' cy='108' r='70' fill='%23f4ede0' stroke='%23dcc7a8' stroke-width='3'/><circle cx='140' cy='108' r='60' fill='%236f4e37'/><circle cx='140' cy='108' r='52' fill='%23a8643a'/><path d='M140 138 C96 108 106 76 125 79 C134 80 140 88 140 93 C140 88 146 80 155 79 C174 76 184 108 140 138 Z' fill='%23fbf3e6'/><path d='M140 128 C112 106 118 88 128 90 C134 91 140 97 140 100' fill='none' stroke='%23e6d3b3' stroke-width='3' stroke-linecap='round'/></svg>">
+        <div>
+          <h3>Velvet Latte</h3>
+          <p>Double espresso with silky steamed milk and a hand-poured heart on top. <em>₹280</em></p>
+        </div>
+      </article>
+
+      <!-- Item 2: iced cold brew drawing (tall glass, ice cubes, straw) -->
+      <article class="reveal">
+        <img alt="Iced caramel cold brew in a tall glass with a straw"
+          src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 280 220'><rect width='280' height='220' fill='%23e8f0ee'/><ellipse cx='140' cy='200' rx='60' ry='8' fill='%23000' opacity='0.15'/><line x1='160' y1='8' x2='138' y2='140' stroke='%23c8553d' stroke-width='8' stroke-linecap='round'/><polygon points='95,40 185,40 175,194 105,194' fill='%23ffffff' opacity='0.55'/><polygon points='98,70 182,70 174,190 106,190' fill='%233b2314'/><path d='M98 70 L182 70 L180 104 C160 118 125 92 99 108 Z' fill='%23d9b48a'/><g fill='%23fff' opacity='0.7'><rect x='110' y='112' width='30' height='30' rx='6' transform='rotate(-12 125 127)'/><rect x='146' y='132' width='28' height='28' rx='6' transform='rotate(14 160 146)'/><rect x='116' y='156' width='26' height='26' rx='6' transform='rotate(8 129 169)'/></g><path d='M104 48 C125 58 150 40 178 52' stroke='%23c68642' stroke-width='6' fill='none' stroke-linecap='round'/><polygon points='95,40 185,40 175,194 105,194' fill='none' stroke='%23b7c6c2' stroke-width='3'/></svg>">
+        <div>
+          <h3>Caramel Cold Brew</h3>
+          <p>Smooth 18-hour cold brew over ice with sea-salt caramel cream. <em>₹420</em></p>
+        </div>
+      </article>
+
+      <!-- Item 3: croissant drawing (layered golden pastry with almond slivers) -->
+      <article class="reveal">
+        <img alt="Golden almond croissant on a plate"
+          src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 280 220'><rect width='280' height='220' fill='%23f6e7c8'/><ellipse cx='140' cy='170' rx='120' ry='30' fill='%23fff'/><ellipse cx='140' cy='170' rx='120' ry='30' fill='none' stroke='%23dcc7a8' stroke-width='3'/><g fill='%23d98c3a' stroke='%23a8621f' stroke-width='3'><ellipse cx='58' cy='150' rx='20' ry='32' transform='rotate(-60 58 150)'/><ellipse cx='96' cy='122' rx='26' ry='40' transform='rotate(-28 96 122)'/><ellipse cx='185' cy='122' rx='26' ry='40' transform='rotate(28 185 122)'/><ellipse cx='222' cy='150' rx='20' ry='32' transform='rotate(60 222 150)'/><ellipse cx='140' cy='112' rx='32' ry='46'/></g><g stroke='%23a8621f' stroke-width='3' fill='none' stroke-linecap='round' opacity='0.7'><path d='M118 90 C130 100 130 120 120 134'/><path d='M162 90 C150 100 150 120 160 134'/><path d='M140 72 L140 140'/></g><g fill='%23fff3dc' stroke='%23c9a063' stroke-width='1.5'><ellipse cx='118' cy='80' rx='9' ry='4' transform='rotate(-25 118 80)'/><ellipse cx='150' cy='72' rx='9' ry='4' transform='rotate(20 150 72)'/><ellipse cx='172' cy='102' rx='9' ry='4' transform='rotate(40 172 102)'/><ellipse cx='108' cy='108' rx='9' ry='4' transform='rotate(-40 108 108)'/><ellipse cx='140' cy='98' rx='9' ry='4'/></g><g fill='%23fff' opacity='0.85'><circle cx='128' cy='60' r='2'/><circle cx='160' cy='86' r='2'/><circle cx='90' cy='96' r='2'/><circle cx='196' cy='108' r='2'/></g></svg>">
+        <div>
+          <h3>Almond Croissant</h3>
+          <p>Flaky butter croissant filled with almond cream and finished with toasted slivers. <em>₹200</em></p>
+        </div>
+      </article>
+
+      <!-- Item 4: mocha drawing (mug with whipped cream and chocolate drizzle) -->
+      <article class="reveal">
+        <img alt="Hazelnut mocha mug topped with whipped cream and chocolate drizzle"
+          src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 280 220'><rect width='280' height='220' fill='%23efe3d0'/><ellipse cx='140' cy='192' rx='110' ry='16' fill='%23fff'/><ellipse cx='140' cy='192' rx='110' ry='16' fill='none' stroke='%23dcc7a8' stroke-width='3'/><circle cx='214' cy='128' r='24' fill='none' stroke='%23f4ede0' stroke-width='11'/><circle cx='214' cy='128' r='24' fill='none' stroke='%23dcc7a8' stroke-width='2'/><path d='M76 84 H204 V150 C204 178 180 192 140 192 C100 192 76 178 76 150 Z' fill='%23f4ede0' stroke='%23dcc7a8' stroke-width='3'/><rect x='76' y='112' width='128' height='20' fill='%23a8643a' opacity='0.85'/><ellipse cx='140' cy='84' rx='64' ry='12' fill='%236f4e37'/><g fill='%23fff'><ellipse cx='140' cy='78' rx='58' ry='16'/><ellipse cx='140' cy='62' rx='42' ry='14'/><ellipse cx='140' cy='47' rx='26' ry='11'/><ellipse cx='140' cy='36' rx='12' ry='8'/></g><g fill='none' stroke='%233b2314' stroke-width='5' stroke-linecap='round'><path d='M96 74 C120 84 160 66 186 76'/><path d='M110 60 C130 68 152 54 172 62'/><path d='M126 46 C136 52 146 44 156 48'/></g><g fill='%238b5a2b' stroke='%235a3a22' stroke-width='2'><circle cx='112' cy='30' r='8'/><circle cx='170' cy='26' r='8'/></g></svg>">
+        <div>
+          <h3>Hazelnut Mocha</h3>
+          <p>Rich espresso, dark chocolate and toasted hazelnut, crowned with whipped cream. <em>₹650</em></p>
+        </div>
+      </article>
+    </section>
+
+    <!-- ORDER FORM SECTION: id="order-form" is the target of the second nav link -->
+    <section id="order-form">
+      <h2>Place Your Order</h2>
+
+      <!-- The form. action/method are kept for a real server, but the script
+           at the bottom intercepts the submit to show the popup instead. -->
+      <form id="order" action="/checkout" method="post">
+
+        <!-- Hidden error box, revealed by JS if no items were chosen -->
+        <div id="form-error" role="alert">Your cup is empty! Add at least one item before checking out.</div>
+
+        <!-- Quantity inputs. min="0" blocks negative numbers.
+             data-name / data-price store info that JS reads to build the receipt.
+             data-price is in rupees. Each input is linked to its label with matching for/id. -->
+        <fieldset class="qty">
+          <legend>Quantities</legend>
+
+          <div class="field">
+            <label for="latte-qty">Velvet Latte</label>
+            <input type="number" id="latte-qty" name="latte-qty" min="0" value="0" data-name="Velvet Latte" data-price="280">
+          </div>
+
+          <div class="field">
+            <label for="coldbrew-qty">Caramel Cold Brew</label>
+            <input type="number" id="coldbrew-qty" name="coldbrew-qty" min="0" value="0" data-name="Caramel Cold Brew" data-price="420">
+          </div>
+
+          <div class="field">
+            <label for="croissant-qty">Almond Croissant</label>
+            <input type="number" id="croissant-qty" name="croissant-qty" min="0" value="0" data-name="Almond Croissant" data-price="200">
+          </div>
+
+          <div class="field">
+            <label for="mocha-qty">Hazelnut Mocha</label>
+            <input type="number" id="mocha-qty" name="mocha-qty" min="0" value="0" data-name="Hazelnut Mocha" data-price="650">
+          </div>
+        </fieldset>
+
+        <!-- Radio buttons: all share name="milk", so only one can be picked.
+             "checked" makes Whole Milk the default. -->
+        <fieldset>
+          <legend>Choose Your Milk</legend>
+
+          <div class="field">
+            <input type="radio" id="milk-whole" name="milk" value="whole" data-label="Whole Milk" checked>
+            <label for="milk-whole">Whole Milk</label>
+          </div>
+
+          <div class="field">
+            <input type="radio" id="milk-oat" name="milk" value="oat" data-label="Oat Milk">
+            <label for="milk-oat">Oat Milk</label>
+          </div>
+
+          <div class="field">
+            <input type="radio" id="milk-almond" name="milk" value="almond" data-label="Almond Milk">
+            <label for="milk-almond">Almond Milk</label>
+          </div>
+        </fieldset>
+
+        <!-- Checkboxes: any number can be ticked. data-price (in rupees) is added to the total once. -->
+        <fieldset>
+          <legend>Add-Ons</legend>
+
+          <div class="field">
+            <input type="checkbox" id="addon-shot" name="addons" value="extra-shot" data-label="Extra Espresso Shot" data-price="80">
+            <label for="addon-shot">Extra Espresso Shot (+₹80)</label>
+          </div>
+
+          <div class="field">
+            <input type="checkbox" id="addon-vanilla" name="addons" value="vanilla-syrup" data-label="Vanilla Syrup" data-price="50">
+            <label for="addon-vanilla">Vanilla Syrup (+₹50)</label>
+          </div>
+
+          <div class="field">
+            <input type="checkbox" id="addon-cream" name="addons" value="whipped-cream" data-label="Whipped Cream" data-price="40">
+            <label for="addon-cream">Whipped Cream (+₹40)</label>
+          </div>
+        </fieldset>
+
+        <!-- Free-text box for special requests on the latte (required textarea) -->
+        <fieldset>
+          <legend>Special Requests</legend>
+          <label for="latte-notes">Notes for the Velvet Latte (extra hot, half sweet, allergies, etc.):</label>
+          <textarea id="latte-notes" name="latte-notes" rows="4" placeholder="Extra hot, light foam, name on the cup..."></textarea>
+        </fieldset>
+
+        <!-- Submit button (required text: "Go To Checkout") -->
+        <input type="submit" value="Go To Checkout">
+      </form>
+    </section>
+  </main>
+
+  <!-- ===================== FOOTER ===================== -->
+  <footer>
+    <p>Made with love by eilte</p>
+  </footer>
+
+  <!-- ===================== CHECKOUT POPUP =====================
+       Hidden until the form is submitted. Contains two stages:
+       "brewing" (animated cup) and "done" (checkmark + receipt). -->
+  <div class="overlay" id="overlay" role="dialog" aria-modal="true" aria-labelledby="done-title">
+    <div class="modal" id="modal">
+
+      <!-- Stage 1: shown for about 2 seconds while the cup "fills" -->
+      <div class="stage-brewing">
+        <svg class="brew-cup" viewBox="0 0 130 130" aria-hidden="true">
+          <defs>
+            <!-- Cup-shaped mask so the coffee fill stays inside the cup outline -->
+            <clipPath id="cupClip">
+              <path d="M25 50 H95 C95 88 78 106 60 106 C42 106 25 88 25 50 Z"/>
+            </clipPath>
+          </defs>
+          <!-- Three steam curls -->
+          <g class="brew-steam">
+            <path d="M45 40 C38 32 52 26 45 16"/>
+            <path d="M60 40 C53 32 67 26 60 16"/>
+            <path d="M75 40 C68 32 82 26 75 16"/>
+          </g>
+          <!-- Cup handle -->
+          <path d="M95 60 C122 60 122 90 90 92" fill="none" stroke="#a8643a" stroke-width="8" stroke-linecap="round"/>
+          <!-- Cup body -->
+          <path d="M25 50 H95 C95 88 78 106 60 106 C42 106 25 88 25 50 Z" fill="#fff" stroke="#a8643a" stroke-width="4"/>
+          <!-- Coffee that rises inside the cup (animated by CSS) -->
+          <g clip-path="url(#cupClip)">
+            <rect class="brew-fill" x="20" y="50" width="80" height="60" fill="#6f4e37"/>
+          </g>
+          <!-- Saucer -->
+          <ellipse cx="60" cy="116" rx="46" ry="6" fill="#dcc7a8"/>
+        </svg>
+        <h3>Brewing your order<span class="dots"></span></h3>
+        <p class="sub">Hang tight, the barista is on it.</p>
+      </div>
+
+      <!-- Stage 2: shown after brewing finishes -->
+      <div class="stage-done">
+        <!-- Checkmark drawn by CSS (circle first, then the tick) -->
+        <svg class="check" viewBox="0 0 60 60" aria-hidden="true">
+          <circle cx="30" cy="30" r="26.5"/>
+          <path d="M18 31 L26 39 L43 21"/>
+        </svg>
+        <h3 id="done-title">Order Done!</h3>
+        <p class="sub">Your coffee is on its way to the counter.</p>
+        <!-- JS fills in the random order number -->
+        <div class="order-no" id="order-no"></div>
+        <!-- JS fills in the itemized receipt -->
+        <ul class="receipt" id="receipt"></ul>
+        <button type="button" id="close-btn">Order Something Else</button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Container where JS drops the falling coffee-bean confetti -->
+  <div id="confetti" aria-hidden="true"></div>
+
+  <!-- ===================== JAVASCRIPT ===================== -->
+  <script>
+    // Wrapped in a function so our variables don't leak into the global scope
+    (function () {
+
+      // ----- Grab the page elements we need to control -----
+      var form = document.getElementById("order");
+      var errorBox = document.getElementById("form-error");
+      var overlay = document.getElementById("overlay");
+      var modal = document.getElementById("modal");
+      var receipt = document.getElementById("receipt");
+      var orderNo = document.getElementById("order-no");
+      var confetti = document.getElementById("confetti");
+      var closeBtn = document.getElementById("close-btn");
+      var brewTimer = null;   // remembers the "brewing" timer so it can be cancelled
+
+      // Formats a number as rupees with Indian digit grouping,
+      // e.g. 280 becomes "₹280" and 125000 becomes "₹1,25,000"
+      function money(n) { return "₹" + Math.round(n).toLocaleString("en-IN"); }
+
+      // Adds one line to the receipt: left text, optional right-hand value,
+      // and an optional CSS class (e.g. "total" or "note").
+      // textContent is used (not innerHTML) so typed notes can't inject code.
+      function addRow(text, value, cls) {
+        var li = document.createElement("li");
+        if (cls) li.className = cls;
+        var a = document.createElement("span");
+        a.textContent = text;
+        li.appendChild(a);
+        if (value !== undefined) {
+          var b = document.createElement("span");
+          b.textContent = value;
+          li.appendChild(b);
+        }
+        receipt.appendChild(li);
+      }
+
+      // Creates 46 coffee-bean shapes at random positions, speeds and sizes.
+      // CSS then animates them falling down the screen.
+      function launchConfetti() {
+        var colors = ["#4a2e1f", "#6f4e37", "#a8643a", "#c68642", "#f0c27b", "#3b2314"];
+        for (var i = 0; i < 46; i++) {
+          var s = document.createElement("span");
+          s.style.left = Math.random() * 100 + "vw";                    // random horizontal spot
+          s.style.background = colors[Math.floor(Math.random() * colors.length)];  // random brown
+          s.style.animationDuration = 2.2 + Math.random() * 2.2 + "s";  // random fall speed
+          s.style.animationDelay = Math.random() * 0.8 + "s";           // staggered starts
+          s.style.transform = "scale(" + (0.7 + Math.random() * 0.8) + ")";  // random size
+          confetti.appendChild(s);
+        }
+        // Clean up the leftover beans after the animation is over
+        setTimeout(function () { confetti.textContent = ""; }, 5500);
+      }
+
+      // Closes the popup and resets everything for a fresh order
+      function closeOverlay() {
+        clearTimeout(brewTimer);                 // cancel the brewing timer if still running
+        overlay.classList.remove("open");        // hide the popup
+        modal.classList.remove("done");          // return it to the "brewing" stage for next time
+        confetti.textContent = "";               // remove any beans still falling
+        form.reset();                            // clear quantities, add-ons, notes
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      }
+
+      // ----- Runs when the user clicks "Go To Checkout" -----
+      form.addEventListener("submit", function (e) {
+        e.preventDefault();   // stops the browser from navigating away
+
+        var items = [];       // the chosen menu items
+        var subtotal = 0;     // running total in rupees
+
+        // Look at every quantity box; keep only those above zero
+        form.querySelectorAll('input[type="number"]').forEach(function (inp) {
+          var qty = parseInt(inp.value, 10);
+          if (qty > 0) {
+            var line = qty * parseFloat(inp.dataset.price);   // quantity × price
+            subtotal += line;
+            items.push({ name: inp.dataset.name, qty: qty, line: line });
+          }
+        });
+
+        // Empty cart: show the shaking error and stop here
+        if (items.length === 0) {
+          errorBox.classList.remove("show");
+          void errorBox.offsetWidth;   // forces a reflow so the shake can replay on repeat clicks
+          errorBox.classList.add("show");
+          errorBox.scrollIntoView({ behavior: "smooth", block: "center" });
+          return;
+        }
+        errorBox.classList.remove("show");
+
+        // ----- Build the receipt -----
+        receipt.textContent = "";   // clear any previous receipt
+
+        // One line per item, e.g. "2 × Velvet Latte  ₹560"
+        items.forEach(function (it) {
+          addRow(it.qty + " × " + it.name, money(it.line));
+        });
+
+        // Show the selected milk (free, so no price)
+        var milk = form.querySelector('input[name="milk"]:checked');
+        if (milk) addRow("Milk: " + milk.dataset.label);
+
+        // Each ticked add-on is charged once per order
+        form.querySelectorAll('input[name="addons"]:checked').forEach(function (cb) {
+          var p = parseFloat(cb.dataset.price);
+          subtotal += p;
+          addRow("+ " + cb.dataset.label, money(p));
+        });
+
+        // Include the special-request note if one was typed
+        var notes = document.getElementById("latte-notes").value.trim();
+        if (notes) addRow("Note: " + notes, undefined, "note");
+
+        addRow("Total", money(subtotal), "total");
+
+        // Random 4-digit order number between 1000 and 9999
+        orderNo.textContent = "ORDER #" + (1000 + Math.floor(Math.random() * 9000));
+
+        // ----- Show the popup in the "brewing" stage -----
+        modal.classList.remove("done");
+        overlay.classList.add("open");
+        closeBtn.blur();
+
+        // After 2.1 seconds, switch to the "done" stage and fire the confetti
+        brewTimer = setTimeout(function () {
+          modal.classList.add("done");
+          launchConfetti();
+          closeBtn.focus();   // keyboard users land on the close button
+        }, 2100);
+      });
+
+      // Clicking "Order Something Else" closes the popup
+      closeBtn.addEventListener("click", closeOverlay);
+
+      // Pressing Escape also closes it (only while it's open)
+      document.addEventListener("keydown", function (e) {
+        if (e.key === "Escape" && overlay.classList.contains("open")) closeOverlay();
+      });
+
+      // ----- Scroll reveal for menu cards -----
+      var cards = document.querySelectorAll("article.reveal");
+      if ("IntersectionObserver" in window) {
+        // The observer watches the cards and reports when they enter the screen
+        var io = new IntersectionObserver(function (entries) {
+          entries.forEach(function (entry) {
+            if (entry.isIntersecting) {
+              entry.target.classList.add("in");   // triggers the fade-up CSS
+              io.unobserve(entry.target);         // only animate once per card
+            }
+          });
+        }, { threshold: 0.15 });   // fires when 15% of the card is visible
+        cards.forEach(function (c) { io.observe(c); });
+      } else {
+        // Very old browsers: just show all cards immediately
+        cards.forEach(function (c) { c.classList.add("in"); });
+      }
+    })();
+  </script>
+
+</body>
+</html>
